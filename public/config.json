@@ -1,0 +1,6 @@
+{
+  "THEME": "light",
+  "BACKEND_API": "https://api.example.com",
+  "MAINTENANCE_MODE": false,
+  "FETCH_TIMEOUT": 60000
+}
