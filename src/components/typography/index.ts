@@ -1,1 +1,5 @@
-export * from './typography'
+export * from './title-level1'
+export * from './title-level2'
+export * from './title-level3'
+export * from './text-normal'
+export * from './text-small'

@@ -1,48 +1,25 @@
-import { useRef } from 'react'
+/* eslint-disable no-console */
+import { ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { RootStoreProvider, useInitStore } from './mobx'
 import { observer } from 'mobx-react-lite'
-import { Snackbar, NotificationGroupHandle, ErrorBoundary } from './components'
-import { RootStoreProvider, InitRootStore, useStores } from './stores'
-import { RootRouter } from './routers'
-import { ThemeOptions, ThemeProvider } from './theme'
-import './app.css'
-// import { _resetGlobalState, observable, autorun, configure } from 'mobx'
+import { getTheme } from './theme'
+import { RootRouter } from './router'
+import { WEB_CONFIG } from './config'
 
-// configure({ disableErrorBoundaries: true })
-
-// test('Throw if age is negative', () => {
-//     expect(() => {
-//         const age = observable.box(10)
-//         autorun(() => {
-//             if (age.get() < 0) throw new Error('Age should not be negative')
-//         })
-//         age.set(-1)
-//     }).toThrow('Age should not be negative')
-// })
-
-// afterEach(() => {
-//     _resetGlobalState()
-// })
-
+let render = 0
 export const App = observer(() => {
-    const notificationRef = useRef<NotificationGroupHandle>(null)
-    const { baseStore } = useStores()
+  render++
+  console.log(`App rendering ${render} time`)
+  console.log(WEB_CONFIG)
+  const { rootStore } = useInitStore()
 
-    return (
-        <ErrorBoundary>
-            <ThemeProvider
-                theme={{
-                    ...ThemeOptions,
-                    mode: baseStore.theme.mode,
-                    type: baseStore.theme.value.id,
-                    color: baseStore.theme.value.color,
-                    palette: baseStore.theme.value.palette,
-                }}
-            >
-                <RootStoreProvider value={InitRootStore}>
-                    <RootRouter />
-                    <Snackbar ref={notificationRef} />
-                </RootStoreProvider>
-            </ThemeProvider>
-        </ErrorBoundary>
-    )
+  return (
+    <RootStoreProvider value={rootStore}>
+      <ThemeProvider theme={getTheme(rootStore.baseStore.themeMode)}>
+        <CssBaseline />
+        <RootRouter />
+      </ThemeProvider>
+    </RootStoreProvider>
+  )
 })

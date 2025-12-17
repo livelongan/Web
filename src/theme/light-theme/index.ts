@@ -1,7 +1,0 @@
-export * from './golden-orchid'
-export * from './yellow-blue'
-export * from './yellow-red'
-export * from './pink-grey'
-export * from './navy-magenta'
-export * from './bato'
-export * from './violet'
