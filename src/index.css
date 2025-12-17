@@ -1,0 +1,71 @@
+/* @import '@progress/kendo-theme-default/dist/all.css'; */
+@import './kendo.css';
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+        'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+/* svg {
+    shape-rendering: optimizespeed;
+} */
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+#root {
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    /* z-index: 2002; */
+    position: relative;
+}
+
+#webpack-dev-server-client-overlay {
+    width: 80vw !important;
+    height: 80vh !important;
+    margin: 0 auto;
+    margin-top: 10vh;
+}
+
+.App {
+    text-align: center;
+    padding: 20px;
+}
+
+.App-header {
+    background-color: #282c34;
+    padding: 20px;
+    color: white;
+}
+
+main {
+    margin-top: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .axis-label {
+        font-size: 12px;
+    }
+}
+
+#tooltip {
+    opacity: 1;
+    position: absolute;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border: 1px solid #000;
+}
