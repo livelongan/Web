@@ -34,7 +34,7 @@ export const AppFooter = observer(() => {
         {isPad ? 'Pad' : ''}
         {isDesktop ? 'Desktop' : ''}
       </TextSmall>
-      <TextSmall>{new Date().getFullYear()} © Sun - 4.0.0</TextSmall>
+      <TextSmall>{new Date().getFullYear()} © APP - 4.0.0</TextSmall>
       <TextSmall>{dayjs().format('HH:mm')}</TextSmall>
     </AppBar>
   )
