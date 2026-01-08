@@ -1,109 +1,132 @@
 import { Stack, type StackProps } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import {
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type RefObject,
-} from 'react'
-import type FormErrorStore from './form-error-store'
-import type FormRuleStore from './form-rule-store'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import type FormErrorStore from './use-form-store/form-error-store'
+import type FormRuleStore from './use-form-store/form-rule-store'
 import { LayoutPage } from '../layout'
-import type FormDataStore from './form-data-store'
+import type FormDataStore from './use-form-store/form-data-store'
+import type { FormStoreHook } from './use-form-store'
 
 export type FormElementProps = Omit<
   StackProps,
   'ref' | 'onChange' | 'onSubmit'
 > & {
-  ref?: RefObject<HTMLFormElement | null>
   dataStore?: FormDataStore<any>
   ruleStore?: FormRuleStore<any>
   errorStore?: FormErrorStore<any>
-  onChange?: (event: React.FormEvent<HTMLFormElement>) => void
+  formStore?: FormStoreHook<any>
+  onChange?: (
+    field: string,
+    value: any,
+    event: React.FormEvent<HTMLFormElement>,
+  ) => void
   onSubmit?: (event: React.FormEvent<HTMLFormElement>) => void
 }
 
 export const LayoutForm = observer(
   ({
-    dataStore,
-    ruleStore,
-    errorStore,
+    formStore,
     children,
     className = '',
     onChange,
     onSubmit,
     ...others
   }: FormElementProps) => {
-    const [visited, setVisited] = useState(false)
     const formRef = useRef<HTMLFormElement | null>(null)
 
-    const validateForm = useCallback(
-      async (name: string, value: any) => {
-        if (ruleStore) {
-          const errorText = await ruleStore.validate(name, value)
-          if (errorStore) {
-            errorStore.setError(name, errorText || '')
-          }
-          return errorText
+    const setErrorFocus = useCallback(() => {
+      const errors = formStore?.getErrors()
+      const inputs = Array.from(
+        formRef.current?.querySelectorAll('.MuiInputBase-input[name]') ?? [],
+      ) as HTMLInputElement[]
+
+      if (errors && inputs.length) {
+        const activeElement = document.activeElement as HTMLInputElement | null
+        const isFocused = inputs.find((input) => input === activeElement)
+        const focusError = formStore?.getError(activeElement?.name || '')
+        const firstErrorElement = inputs.find((input) => errors[input.name])
+        if (!isFocused || !focusError) {
+          setTimeout(() => {
+            if (firstErrorElement) {
+              firstErrorElement?.focus()
+            }
+          }, 100)
         }
-        return null
+      }
+    }, [formStore])
+
+    const handleChange = useCallback(
+      (event: React.FormEvent<HTMLFormElement>) => {
+        const input = event.target as HTMLInputElement
+        if (input.type === 'select') {
+          return
+        }
+        const name = input.name
+        if (name) {
+          let value: any =
+            input.type === 'checkbox' ? input.checked : input.value
+          if (formStore?.getValueType(name) === 'number') {
+            value = value === '' ? null : Number(value)
+          } else if (input.type === 'checkbox') {
+            value = Boolean(value)
+          }
+          formStore?.setValue(name, value, event)
+          if (onChange) {
+            onChange(name, value, event)
+          }
+        }
       },
-      [errorStore, ruleStore],
+      [formStore, onChange],
     )
 
-    const handleChange = (event: React.FormEvent<HTMLFormElement>) => {
-      const input = event.target as HTMLInputElement
-      const name = input.name
-      if (name) {
-        const value = input.type === 'checkbox' ? input.checked : input.value
-        dataStore?.setField(name, value)
-        validateForm(name, value).then((errorText) => {
-          if (errorText) {
-            input.classList.add('error')
-            input.focus()
-          } else {
-            input.classList.remove('error')
-          }
-        })
-
-        if (onChange) {
-          onChange(event)
+    const handleSubmit = useCallback(
+      async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+        if (formStore) {
+          formStore.setVisited(true)
+          await formStore.validateForm()
         }
-      }
-    }
+        if (formStore?.hasErrors()) {
+          setErrorFocus()
+          return
+        }
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
-      if (!visited && dataStore && ruleStore) {
-        await ruleStore.validateAll(dataStore.getAll(), errorStore)
-        setVisited(true)
-      }
-      if (errorStore?.hasErrors()) {
-        return
-      }
-      if (onSubmit) {
-        onSubmit(event)
-      }
-      return event
-    }
+        if (onSubmit) {
+          // submit form
+          onSubmit(event)
+        }
+        return event
+      },
+      [formStore, onSubmit, setErrorFocus],
+    )
 
     useLayoutEffect(() => {
-      if (formRef.current) {
-        others.ref && (others.ref.current = formRef.current)
+      if (formRef.current && formStore) {
+        formStore.ref.current = formRef.current
       }
-    }, [formRef, others.ref, visited])
+    }, [formRef, formStore])
+
+    useEffect(() => {
+      if (formStore && onChange) {
+        formStore.register('change', onChange as unknown as EventListener)
+      }
+      return () => {
+        if (formStore && onChange) {
+          formStore.cancel('change')
+        }
+      }
+    }, [formStore, onChange])
 
     return (
       <LayoutPage>
         <Stack
-          ref={formRef}
           gap={'20px'}
           component={'form'}
           className={`layout-form ${className}`.trim()}
-          onInput={handleChange}
-           onSubmit={handleSubmit}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
           {...others}
+          ref={formRef}
         >
           {children}
         </Stack>

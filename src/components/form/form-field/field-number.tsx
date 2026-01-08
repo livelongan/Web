@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FieldBase, type FieldBaseProps } from './field-base'
 
 type FieldNumberProps = FieldBaseProps & {}
 
 export const FieldNumber = observer(
-  ({ className = '', ...others }: FieldNumberProps) => {
+  ({ className = '', formStore, name, ...others }: FieldNumberProps) => {
     const [numberValue, setNumberValue] = useState<number | string>()
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = event.target.value
@@ -14,10 +14,17 @@ export const FieldNumber = observer(
       }
     }
 
+    useEffect(() => {
+      formStore?.setValueType(name, 'number')
+    })
+
     return (
       <FieldBase
+        name={name}
+        formStore={formStore}
         onInput={handleChange}
         autoComplete='off'
+        type='number'
         className={`field-number ${className}`.trim()}
         defaultValue={numberValue}
         {...others}

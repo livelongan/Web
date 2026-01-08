@@ -2,7 +2,7 @@ import { observable, action, makeAutoObservable } from 'mobx'
 import type { FormValue } from './form-data-store'
 import type FormErrorStore from './form-error-store'
 
-export interface FormRule<V extends FormValue> {
+export interface FormRule<T extends FormValue> {
   required?: boolean
   pattern?: RegExp
   minLength?: number
@@ -10,21 +10,33 @@ export interface FormRule<V extends FormValue> {
   min?: number
   max?: number
   message?: string
-  validate?: (value: V) => boolean | string | Promise<boolean | string>
+  validate?: (value: T) => boolean | string | Promise<boolean | string>
   priority?: number // 优先级，数值越小优先级越高
 }
 export default class FormRuleStore<T extends Record<string, FormValue>> {
-  private rules = observable.map<keyof T, FormRule<any>[]>()
+  private rules = observable.map<keyof T, FormRule<any> | FormRule<any>[]>()
 
-  constructor(initialValues: Partial<Record<keyof T, FormRule<any>[]>> = {}) {
+  constructor(
+    initialValues: Partial<
+      Record<keyof T, FormRule<any> | FormRule<any>[]>
+    > = {},
+  ) {
     makeAutoObservable(this)
     this.initialize(initialValues)
   }
 
   private initialize = action(
-    (initialValues: Partial<Record<keyof T, FormRule<any>[]>>) => {
+    (
+      initialValues: Partial<Record<keyof T, FormRule<any> | FormRule<any>[]>>,
+    ) => {
       Object.entries(initialValues).forEach(([fieldName, rules]) => {
-        this.setRules(fieldName as keyof T, rules as FormRule<any>[])
+        if (rules == null) return
+        // normalize single rule or array into array when delegating to setRules
+        this.setRules(
+          fieldName as keyof T,
+          // cast to allow union overload; setRules will normalize internally
+          rules as FormRule<any> | FormRule<any>[],
+        )
       })
     },
   )
@@ -45,22 +57,34 @@ export default class FormRuleStore<T extends Record<string, FormValue>> {
   }
 
   addRule = action(<K extends keyof T>(fieldName: K, rule: FormRule<T[K]>) => {
-    if (!this.rules.has(fieldName)) {
-      this.rules.set(fieldName, [])
-    }
-    const fieldRules = this.rules.get(fieldName)!
+    const existing = this.rules.get(fieldName)
+    const fieldRules: FormRule<any>[] = existing
+      ? Array.isArray(existing)
+        ? existing.slice()
+        : [existing]
+      : []
     fieldRules.push(rule as FormRule<any>)
     this.rules.set(fieldName, this.sortRules(fieldRules))
   })
 
   setRules = action(
-    <K extends keyof T>(fieldName: K, rules: FormRule<T[K]>[]) => {
-      this.rules.set(fieldName, this.sortRules(rules as FormRule<any>[]))
+    <K extends keyof T>(
+      fieldName: K,
+      rules: FormRule<T[K]> | FormRule<T[K]>[],
+    ) => {
+      const list = Array.isArray(rules) ? rules : [rules]
+      this.rules.set(fieldName, this.sortRules(list as FormRule<any>[]))
     },
   )
 
   getRules = <K extends keyof T>(fieldName: K): FormRule<T[K]>[] => {
-    return (this.rules.get(fieldName) || []) as FormRule<T[K]>[]
+    const v = this.rules.get(fieldName)
+    if (!v) return []
+    return (Array.isArray(v) ? v : [v]) as FormRule<T[K]>[]
+  }
+
+  getValidateField = (): string[] => {
+    return [...this.rules.keys()].map((key) => String(key))
   }
 
   clearRules = action(<K extends keyof T>(fieldName: K) => {
@@ -83,7 +107,6 @@ export default class FormRuleStore<T extends Record<string, FormValue>> {
     rule: FormRule<T[K]>,
     value: T[K],
   ): Promise<string | undefined> {
-    // required 验证现在总是最先执行
     if (
       rule.required &&
       (value === undefined || value === null || value === '')
@@ -131,7 +154,6 @@ export default class FormRuleStore<T extends Record<string, FormValue>> {
     errorStore?: FormErrorStore<T>,
   ): Promise<Partial<Record<keyof T, string>>> => {
     const errors: Partial<Record<keyof T, string>> = {}
-
     await Promise.all(
       (Object.entries(values) as [keyof T, T[keyof T]][]).map(
         async ([fieldName, value]) => {

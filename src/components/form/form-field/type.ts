@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react'
-import type FormDataStore from '../form-data-store'
-import type FormErrorStore from '../form-error-store'
+import type { FormStoreHook } from '../use-form-store/use-form-store'
 
 export type FieldProps = {
   name: string
-  dataStore?: FormDataStore<any>
-  errorStore?: FormErrorStore<any>
+  formStore?: FormStoreHook<any>
   note?: string | string[] | ReactNode
   onClear?: () => void
 }

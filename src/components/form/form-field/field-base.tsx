@@ -3,32 +3,24 @@ import { observer } from 'mobx-react-lite'
 import type { FieldProps } from './type'
 import Clear from '@mui/icons-material/Clear'
 import { ButtonBaseIcon } from '../../buttons'
-import { TextNormal, TextSmall } from '../../typography'
-import { useEffect, useMemo, useState } from 'react'
+import { TextSmall } from '../../typography'
+import { useEffect, useState } from 'react'
+import { useFormField } from './use-form-field'
+
 export type FieldBaseProps = Omit<TextFieldProps, 'name'> & FieldProps & {}
 
 export const FieldBase = observer(
   ({
     name,
     note,
-    dataStore,
-    errorStore,
+    formStore,
     slotProps,
     onClear,
     ...others
   }: FieldBaseProps) => {
-    const value = dataStore?.getField(name) ?? ''
+    const value = formStore?.getValue(name) ?? ''
     const [controlValue, setControlValue] = useState<any>(value)
-    const helperTip = useMemo(() => {
-      if (!note) {
-        return null
-      } else if (note instanceof Array) {
-        return note.map((it) => <TextNormal>{it}</TextNormal>)
-      } else if (typeof note === 'string') {
-        return <TextNormal>{note}</TextNormal>
-      }
-      return note
-    }, [note])
+    const { helperTip } = useFormField({ note })
 
     useEffect(() => {
       setControlValue(value)
@@ -38,13 +30,13 @@ export const FieldBase = observer(
       <TextField
         name={name}
         value={controlValue}
-        variant='filled'
-        error={errorStore ? !!errorStore.getError(name) : undefined}
+        error={!!formStore?.getError(name)}
+        required={formStore?.hasRequired(name)}
         helperText={
           <>
-            {errorStore ? errorStore.getError(name) : undefined}
+            {formStore?.getError(name)}
             {others.multiline && (
-              <TextSmall className='words-count' sx={{ textAlign: 'right' }}>
+              <TextSmall className='words-count' sx={{ textAlign: 'left' }}>
                 {value.length > 0 ? `${value.length} words` : ''}
               </TextSmall>
             )}
@@ -55,8 +47,8 @@ export const FieldBase = observer(
           input: {
             endAdornment: (
               <ButtonBaseIcon
-                onClick={() => {
-                  dataStore?.setField(name, '')
+                onClick={(event) => {
+                  formStore?.setValue(name, '', event)
                   if (onClear) {
                     onClear()
                   }
@@ -65,6 +57,12 @@ export const FieldBase = observer(
                 <Clear />
               </ButtonBaseIcon>
             ),
+          },
+          htmlInput: {
+            maxLength: formStore?.getMaxLength(name),
+            minLength: formStore?.getMinLength(name),
+            max: formStore?.getMax(name),
+            min: formStore?.getMin(name),
           },
           ...slotProps,
         }}

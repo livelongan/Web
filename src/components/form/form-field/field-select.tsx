@@ -2,162 +2,210 @@ import {
   MenuItem,
   TextField,
   InputAdornment,
-  IconButton,
   Paper,
   Popper,
   ClickAwayListener,
+  type TextFieldProps,
   Box,
 } from '@mui/material'
 import { observer } from 'mobx-react-lite'
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { TextNormal } from '../../typography'
 import { Close, ExpandMore } from '@mui/icons-material' // 将 ArrowDropDown 替换为 ExpandMore
+import type { FieldProps } from './type'
+import { ButtonBaseIcon } from '../../buttons'
+import { useFormField } from './use-form-field'
 
 type FieldSelectOptions = {
   [key: string]: string | number | boolean
 }
 
-type FieldSelectProps = {
-  name: string
-  sources?: FieldSelectOptions[] | string[] | boolean[] | number[]
-  dataKey?: string
-  dataValue?: string
-  dataStore?: any
-  errorStore?: any
-  className?: string
-}
+type FieldSelectProps = Omit<TextFieldProps, 'name'> &
+  FieldProps & {
+    sources?: FieldSelectOptions[] | Array<string | number | boolean>
+    dataKey?: string
+    dataLabel?: string
+  }
+type OptionMapType = Map<string, FieldSelectOptions | string | number | boolean>
 
 export const FieldSelect = observer(
   ({
     className = '',
     name,
     sources = [],
-    dataStore,
-    errorStore,
-    dataKey = 'id',
-    dataValue = 'label',
+    formStore,
+    dataKey = 'key',
+    dataLabel = 'label',
+    slotProps,
+    note,
+    ...others
   }: FieldSelectProps) => {
+    const { helperTip } = useFormField({ note })
     const [inputValue, setInputValue] = useState('')
     const [filteredOptions, setFilteredOptions] = useState<
       FieldSelectOptions[]
     >([])
-    const [open, setOpen] = useState(false)
     const anchorRef = useRef<HTMLDivElement>(null)
+    const [depandence] = useState({
+      cacheSources: null as FieldSelectOptions[] | null,
+    })
+    const [open, setOpen] = useState(false)
+    const [value, setValue] = useState('')
+    const [options, setOptions] = useState<FieldSelectOptions[]>([])
+    const [mateSources] = useState<OptionMapType>(new Map())
 
-    const options = useMemo(() => {
-      return sources.map((it, index) => {
-        if (typeof it === 'object') {
-          return {
-            [dataKey]: `${it[dataKey]}_${index + 1}`,
-            [dataValue]: it[dataValue],
-            origin: it,
-          }
-        }
-        return {
-          [dataKey]: `${it}_${index + 1}`,
-          [dataValue]: it,
-          origin: it,
-        }
-      }) as FieldSelectOptions[]
-    }, [dataKey, dataValue, sources])
-
-    const selectedValue = dataStore?.getField(name)
+    const selectedValue = formStore?.getValue(name)
     const selectedLabel = useMemo(() => {
-      if (selectedValue) {
-        if (typeof selectedValue !== 'object') {
-          return (
-            options.find(
-              (opt) => String(opt[dataValue]) === String(selectedValue),
-            )?.[dataValue] || ''
-          )
-        }
-        return (
-          options.find(
-            (opt) => String(opt[dataKey]) === String(selectedValue[dataKey]),
-          )?.[dataValue] || ''
-        )
+      const findOption = options.find(
+        (opt) => String(opt.realKey) === String(selectedValue),
+      )
+      if (selectedValue && findOption) {
+        return findOption[dataLabel] ?? ''
       }
-    }, [dataKey, dataValue, options, selectedValue])
+    }, [dataLabel, options, selectedValue])
+
+    const isSelected = (option: FieldSelectOptions) => {
+      return selectedValue && String(option.realKey) === String(selectedValue)
+    }
+
+    const handleClear = (event: React.MouseEvent | React.FormEvent) => {
+      setInputValue('')
+      setFilteredOptions(options)
+      formStore?.setValue(name, '', event)
+      setOpen(true)
+    }
+
+    const handleSelect = (
+      value: FieldSelectOptions,
+      event: React.MouseEvent | React.FormEvent,
+    ) => {
+      const mate = mateSources.get(String(value[dataKey]))
+      if (typeof mate === 'object') {
+        formStore?.setValue(name, mate[dataKey], event)
+      } else {
+        formStore?.setValue(name, mate, event)
+      }
+      setOpen(false)
+      setInputValue('')
+    }
+
+    const handleInput = useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        setInputValue(event.target.value)
+        if (!open) {
+          setOpen(true)
+        }
+      },
+      [open],
+    )
 
     useEffect(() => {
+      //initial options
+      if (
+        JSON.stringify(options) !== JSON.stringify(depandence.cacheSources) ||
+        !depandence.cacheSources
+      ) {
+        const data = sources.map((it, index) => {
+          let key = ''
+          if (typeof it === 'object') {
+            key = `${it[dataKey]}_${index + 1}`
+            mateSources.set(key, it as FieldSelectOptions)
+            return {
+              [dataKey]: `${it[dataKey]}_${index + 1}`,
+              [dataLabel]: it[dataLabel],
+              realKey: it[dataKey],
+            }
+          } else {
+            key = `${it}_${index + 1}`
+            mateSources.set(key, it)
+            return {
+              [dataKey]: `${it}_${index + 1}`,
+              [dataLabel]: it,
+              realKey: it,
+            }
+          }
+        }) as FieldSelectOptions[]
+        depandence.cacheSources = [...data]
+        setOptions(data)
+      }
+    }, [dataKey, dataLabel, depandence, mateSources, options, sources])
+
+    useEffect(() => {
+      //filter options
       if (inputValue.trim() === '') {
         setFilteredOptions(options)
       } else {
         setFilteredOptions(
           options.filter((option) =>
-            String(option[dataValue])
+            String(option[dataLabel])
               .toLowerCase()
               .includes(inputValue.toLowerCase()),
           ),
         )
       }
-    }, [inputValue, options, dataValue])
+    }, [inputValue, options, dataLabel])
 
-    const handleClear = () => {
-      setInputValue('')
-      setFilteredOptions(options)
-    }
+    useEffect(() => {
+      setValue(`${open ? inputValue : (selectedLabel ?? '')}`)
+    }, [open, inputValue, selectedLabel])
 
-    const handleSelect = (value: FieldSelectOptions) => {
-      if (dataStore) {
-        dataStore.setField(name, value)
-      }
-      setOpen(false)
-      setInputValue('')
-    }
-    const isSelected = (option: FieldSelectOptions) => {
-      if (typeof selectedValue !== 'object') {
-        return (
-          selectedValue && String(option[dataValue]) === String(selectedValue)
-        )
-      }
-      return (
-        selectedValue &&
-        String(option[dataKey]) === String(selectedValue[dataKey])
-      )
-    }
     return (
-      <ClickAwayListener onClickAway={() => setOpen(false)}>
+      <ClickAwayListener
+        onClickAway={() => {
+          setOpen(false)
+        }}
+      >
         <Box ref={anchorRef}>
           <TextField
             className={`field-select ${className}`.trim()}
-            fullWidth
-            defaultValue={open ? inputValue : selectedLabel}
-            onChange={(e) => {
-              setInputValue(e.target.value)
-              if (!open) setOpen(true)
-            }}
+            value={value}
+            onChange={handleInput}
             onFocus={() => {
               setOpen(true)
-              setInputValue('')
             }}
+            required={formStore?.hasRequired(name)}
+            type='select'
             placeholder={`${selectedLabel ?? ''}`}
-            error={errorStore ? !!errorStore.getError(name) : undefined}
-            helperText={errorStore ? errorStore.getError(name) : undefined}
+            error={!!formStore?.getError(name)}
+            helperText={
+              <>
+                {formStore?.getError(name)}
+                {helperTip}
+              </>
+            }
             slotProps={{
               input: {
                 endAdornment: (
                   <InputAdornment position='end'>
-                    {inputValue ? (
-                      <IconButton size='small' onClick={handleClear}>
+                    {value ? (
+                      <ButtonBaseIcon size='small' onClick={handleClear}>
                         <Close fontSize='small' />
-                      </IconButton>
+                      </ButtonBaseIcon>
                     ) : (
-                      <ExpandMore /> // 使用 ExpandMore 图标替代 ArrowDropDown
+                      <ButtonBaseIcon size='small'>
+                        <ExpandMore />
+                      </ButtonBaseIcon>
                     )}
                   </InputAdornment>
                 ),
               },
+              ...slotProps,
             }}
+            {...others}
           />
-
           <Popper
             open={open}
             anchorEl={anchorRef.current}
             placement='bottom-start'
-            style={{ width: anchorRef.current?.clientWidth, zIndex: 1300 }}
+            style={{
+              width: anchorRef.current?.clientWidth,
+              zIndex: 1300,
+            }}
           >
-            <Paper sx={{ padding: '8px 0' }} elevation={3}>
+            <Paper
+              sx={{ padding: '8px 0', maxHeight: '240px', overflow: 'auto' }}
+              elevation={3}
+            >
               {filteredOptions.length === 0 ? (
                 <MenuItem disabled>No options</MenuItem>
               ) : (
@@ -165,9 +213,11 @@ export const FieldSelect = observer(
                   <MenuItem
                     key={String(option[dataKey])}
                     selected={isSelected(option)}
-                    onClick={() => handleSelect(option)}
+                    onClick={(event) => {
+                      handleSelect(option, event)
+                    }}
                   >
-                    <TextNormal>{String(option[dataValue])}</TextNormal>
+                    <TextNormal>{String(option[dataLabel])}</TextNormal>
                   </MenuItem>
                 ))
               )}

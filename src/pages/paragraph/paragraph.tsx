@@ -1,76 +1,127 @@
 import { observer } from 'mobx-react-lite'
 import {
   ButtonContained,
+  FieldCheckbox,
+  FieldDigital,
   FieldNumber,
+  FieldRadio,
+  FieldSelect,
   FieldString,
+  FieldSwitch,
   FieldTextarea,
   LayoutForm,
+  useFormStore,
   type FormElementProps,
 } from '../../components'
-import { useEffect, useRef, useState } from 'react'
-import FormErrorStore from '../../components/form/form-error-store'
-import FormRuleStore from '../../components/form/form-rule-store'
-import FormDataStore from '../../components/form/form-data-store'
+import { useState } from 'react'
 
 type BookProps = {
   title: string
+  name: string
   remark: string
   count?: number
-  gender?: string
-}
-
-const RULE = {
-  title: [{ required: true }, { minLength: 3 }],
+  refrenance?: string
+  isPubilished?: boolean
+  gender?: 'man' | 'female' | ''
 }
 
 export const ParagraphPage = observer(() => {
-  const ref = useRef<HTMLFormElement | null>(null)
-  const [data] = useState(
-    () =>
-      new FormDataStore<BookProps>({ title: '', remark: '', gender: 'girl' }),
-  )
-  const [error] = useState(() => new FormErrorStore<BookProps>())
-  const [rule] = useState(() => new FormRuleStore<BookProps>(RULE))
   const [loading, setLoading] = useState(false)
+
+  const formStore = useFormStore<BookProps>({
+    data: {
+      title: 'title',
+      name: 'name',
+      remark: 'remark',
+      count: 12,
+      refrenance: '001',
+      isPubilished: false,
+      gender: 'man',
+    },
+    rule: {
+      title: { required: true, minLength: 3, maxLength: 10 },
+      name: { required: true },
+      count: { required: true, min: 20, max: 100 },
+      remark: { required: true },
+      gender: { required: true },
+    },
+  })
 
   const handleSubmit: FormElementProps['onSubmit'] = () => {
     setLoading(true)
+    // eslint-disable-next-line no-console
+    console.log('Submit Form', formStore.getValues())
     setTimeout(() => {
       setLoading(false)
     }, 1000)
   }
 
-  useEffect(() => {
-    if (ref.current) {
+  const handleChange: FormElementProps['onChange'] = (field, value) => {
+    // eslint-disable-next-line no-console
+    console.log(field, value, formStore.getValues())
+    if (field === 'title') {
+      formStore.setValue('name', 'name')
     }
-  }, [ref])
+  }
 
   return (
     <LayoutForm
-      ref={ref}
-      dataStore={data}
-      ruleStore={rule}
-      errorStore={error}
+      id='paragraph'
+      formStore={formStore}
       onSubmit={handleSubmit}
+      onChange={handleChange}
     >
-      <FieldString
-        label='Title'
-        name='title'
-        required
-        dataStore={data}
-        errorStore={error}
-      />
+      <FieldString label='Title' name='title' formStore={formStore} />
+      <FieldString label='Name' name='name' formStore={formStore} />
       <FieldNumber
         label='Count'
         name={'count'}
-        dataStore={data}
-        errorStore={error}
+        formStore={formStore}
+        note='Number value between 20 and 100'
+      />
+      <FieldDigital
+        label='No.'
+        name={'refrenance'}
+        formStore={formStore}
+        note='Digital only field'
       />
       <FieldTextarea
         label='Remark'
         name='remark'
-        dataStore={data}
-        errorStore={error}
+        minRows={2}
+        formStore={formStore}
+      />
+      <FieldRadio
+        label={'Man'}
+        name={'gender'}
+        value={'man'}
+        formStore={formStore}
+      />
+      <FieldRadio
+        label={'Female'}
+        name={'gender'}
+        value={'female'}
+        formStore={formStore}
+      />
+      <FieldSelect
+        name={'gender'}
+        label={'Gender'}
+        sources={[
+          { label: 'Man', key: 'man' },
+          { label: 'Female', key: 'female' },
+        ]}
+        note='Select your gender'
+        formStore={formStore}
+      />
+      <FieldCheckbox
+        label={'Published'}
+        name={'isPubilished'}
+        formStore={formStore}
+      />
+      <FieldSwitch
+        label={'Published'}
+        name={'isPubilished'}
+        formStore={formStore}
       />
       <ButtonContained type='submit' loading={loading}>
         Submit
