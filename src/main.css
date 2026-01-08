@@ -9,6 +9,9 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --scrollbar-bg: transparent;
+  --scrollbar-thumb: var(--text-title);
 }
 
 body {
@@ -20,6 +23,31 @@ body {
   color-scheme: light;
   color: var(--text-primary);
   background-color: var(--background-primary);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #eb0249 !important;
+}
+
+* {
+  scrollbar-width: 10px;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
 }
 
 input:-webkit-autofill,
@@ -61,4 +89,22 @@ input:-internal-autofill-selected {
   --ht-cell-horizontal-border-color: #cbd5e0;
   --ht-cell-vertical-border-color: #cbd5e0;
   --ht-wrapper-border-color: #a0aec0;
+}
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  /* Firefox */
+  appearance: textfield;
+}
+
+.field-radio,
+.field-checkbox,
+.field-switch {
+  margin-top: -6px
 }

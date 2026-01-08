@@ -435,6 +435,10 @@ export const getTheme = (mode: ThemeModeType) => {
         },
       },
       MuiTextField: {
+        defaultProps: {
+          fullWidth: true,
+          variant: 'filled',
+        },
         styleOverrides: {
           root: {
             '& .MuiOutlinedInput-root': {
@@ -502,6 +506,7 @@ export const getTheme = (mode: ThemeModeType) => {
       MuiFilledInput: {
         styleOverrides: {
           root: {
+            paddingRight: '4px',
             background: 'var(--background-primary)',
             '&:focus,&.Mui-focused,&:hover': {
               background: 'var(--background-primary)',
@@ -515,6 +520,19 @@ export const getTheme = (mode: ThemeModeType) => {
             '&.Mui-focused::after': {
               borderBottomWidth: '1px',
             },
+            '.MuiFilledInput-input': {
+              paddingTop: '42px',
+              paddingBottom: '14px',
+              // padding: '18px 0 16px 12px',
+            },
+            '.MuiInputBase-inputMultiline': {
+              padding: 0,
+            },
+          },
+          multiline: {
+            paddingTop: '42px',
+            paddingBottom: '14px',
+            // padding: '18px 0 16px 12px',
           },
         },
       },
@@ -524,6 +542,64 @@ export const getTheme = (mode: ThemeModeType) => {
           //   transform: 'translate(12px, 7px)', // 仅上移，不缩小
           //   fontSize: '1rem !important', // 保持字体大小
           // },
+          root: {
+            transform: 'translate(12px, 12px) scale(1)',
+            '&.MuiInputLabel-shrink': {
+              // transform: 'translate(12px, 7px) scale(1)', // 上移位置，保持大小不变
+            },
+          },
+          asterisk: {
+            color: 'var(--error-color)',
+          },
+        },
+      },
+      MuiFormControlLabel: {
+        styleOverrides: {
+          label: {
+            textBox: 'trim-both cap alphabetic',
+          },
+        },
+      },
+      MuiFormHelperText: {
+        styleOverrides: {
+          root: {
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        },
+      },
+      MuiCheckbox: {
+        defaultProps: {
+          disableRipple: true,
+          size: 'large',
+        },
+        styleOverrides: {
+          root: {
+            padding: '0 9px',
+            '.MuiSvgIcon-root': {
+              width: '1.2em',
+              height: '1.2em',
+            },
+          },
+        },
+      },
+      MuiRadio: {
+        defaultProps: {
+          disableRipple: true,
+        },
+        styleOverrides: {
+          root: {
+            padding: '0 9px',
+            '.MuiSvgIcon-root': {
+              width: '1.2em',
+              height: '1.2em',
+            },
+          },
+        },
+      },
+      MuiSwitch: {
+        defaultProps: {
+          disableRipple: true,
         },
       },
       MuiPaper: {
