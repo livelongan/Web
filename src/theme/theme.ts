@@ -511,6 +511,14 @@ export const getTheme = (mode: ThemeModeType) => {
             '&:focus,&.Mui-focused,&:hover': {
               background: 'var(--background-primary)',
             },
+            '&.Mui-disabled': {
+              color: 'var(--text-disabled)',
+              background: 'var(--background-disabled)',
+            },
+            '&.Mui-disabled:focus,&.Mui-disabled.Mui-focused,&.Mui-disabled:hover':
+              {
+                background: 'var(--background-disabled)',
+              },
             '&::before, &::after': {
               borderBottomWidth: '1px',
             },
@@ -546,6 +554,9 @@ export const getTheme = (mode: ThemeModeType) => {
             transform: 'translate(12px, 12px) scale(1)',
             '&.MuiInputLabel-shrink': {
               // transform: 'translate(12px, 7px) scale(1)', // 上移位置，保持大小不变
+            },
+            '&.Mui-disabled': {
+              color: 'var(--text-disabled)',
             },
           },
           asterisk: {

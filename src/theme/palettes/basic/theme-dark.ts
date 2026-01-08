@@ -39,6 +39,8 @@ export const BasicDark = {
     paper: '#222a2f',
     header: '#2d2d2d',
     footer: '#212121',
+    scroll: '#f0f4ff',
+    disabled: 'rgba(86, 86, 86, 0.12)',
   },
   divider: '#1d1e20',
   dividerPrimary: 'rgba(235, 2, 73, 0.5)',

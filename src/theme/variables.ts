@@ -20,9 +20,13 @@ export const getVariables = (palette: typeof darkPalette) =>
     '--info-color': palette.info.main,
     '--success-color': palette.success.main,
 
+    '--text-disabled': palette.text.disabled,
+    '--background-disabled': palette.background.disabled,
+
     '--border-color': palette.divider,
     '--border-color-primary': palette.dividerPrimary,
     '--background-footer': palette.background.footer,
+    '--background-scroll': palette.background.scroll,
 
     // '--font-family': 'Open Sans, Roboto, Helvetica Neue, Arial, sans-serif',
     '--font-family': `Open Sans, Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,

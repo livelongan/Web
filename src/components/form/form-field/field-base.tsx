@@ -45,9 +45,12 @@ export const FieldBase = observer(
         }
         slotProps={{
           input: {
-            endAdornment: (
+            endAdornment: others.disabled ? undefined : (
               <ButtonBaseIcon
                 onClick={(event) => {
+                  if (others.disabled) {
+                    return
+                  }
                   formStore?.setValue(name, '', event)
                   if (onClear) {
                     onClear()

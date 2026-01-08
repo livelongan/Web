@@ -39,6 +39,8 @@ export const BasicLight = {
     paper: '#f8f9fa',
     header: '#e9ecef',
     footer: '#212529',
+    scroll: '#f0f4ff',
+    disabled: 'rgba(108, 108, 108, 0.12)',
   },
   divider: '#d9d9d9',
   dividerPrimary: '#eb0249',

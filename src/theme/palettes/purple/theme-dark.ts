@@ -40,6 +40,8 @@ export const darkPalette = {
     paper: '#290740',
     header: '#f4bb09',
     footer: '#002b36',
+    scroll: '#f0f4ff',
+    disabled: 'rgba(86, 86, 86, 0.12)',
   },
   divider: '#3a5c40',
   dividerPrimary: '#ff4d6d',

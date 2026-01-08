@@ -69,6 +69,9 @@ export const FieldSelect = observer(
     }
 
     const handleClear = (event: React.MouseEvent | React.FormEvent) => {
+      if (others.disabled) {
+        return
+      }
       setInputValue('')
       setFilteredOptions(options)
       formStore?.setValue(name, '', event)
@@ -175,7 +178,7 @@ export const FieldSelect = observer(
             }
             slotProps={{
               input: {
-                endAdornment: (
+                endAdornment: others.disabled ? undefined : (
                   <InputAdornment position='end'>
                     {value ? (
                       <ButtonBaseIcon size='small' onClick={handleClear}>
