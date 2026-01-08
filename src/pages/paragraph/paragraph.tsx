@@ -49,7 +49,7 @@ export const ParagraphPage = observer(() => {
 
   const handleSubmit: FormElementProps['onSubmit'] = () => {
     setLoading(true)
-    // eslint-disable-next-line no-console
+    // get value
     console.log('Submit Form', formStore.getValues())
     setTimeout(() => {
       setLoading(false)
@@ -57,11 +57,11 @@ export const ParagraphPage = observer(() => {
   }
 
   const handleChange: FormElementProps['onChange'] = (field, value) => {
-    // eslint-disable-next-line no-console
     console.log(field, value, formStore.getValues())
-    if (field === 'title') {
-      formStore.setValue('name', 'name')
-    }
+    // if (field === 'title') {
+    //   // set value
+    //   formStore.setValue('name', 'name')
+    // }
   }
 
   return (
