@@ -1,11 +1,15 @@
 ## Start step
 npm i 
+
 npm run dev
 
 ## Core thing
 Route
+
 Store
+
 Theme
+
 Form
 
 ## Remark
