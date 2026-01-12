@@ -110,7 +110,6 @@ export const ParagraphPage = observer(() => {
           { label: 'Man', key: 'man' },
           { label: 'Female', key: 'female' },
         ]}
-        note='Select your gender'
         formStore={formStore}
       />
       <FieldCheckbox

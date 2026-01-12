@@ -20,7 +20,7 @@ type FieldSelectOptions = {
   [key: string]: string | number | boolean
 }
 
-type FieldSelectProps = Omit<TextFieldProps, 'name'> &
+type FieldSelectProps = Omit<TextFieldProps, 'name' | 'children'> &
   FieldProps & {
     sources?: FieldSelectOptions[] | Array<string | number | boolean>
     dataKey?: string
