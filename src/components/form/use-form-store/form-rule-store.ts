@@ -15,6 +15,9 @@ export interface FormRule<T extends FormValue> {
 }
 export default class FormRuleStore<T extends Record<string, FormValue>> {
   private rules = observable.map<keyof T, FormRule<any> | FormRule<any>[]>()
+  private initialRules: Partial<
+    Record<keyof T, FormRule<any> | FormRule<any>[]>
+  > = {}
 
   constructor(
     initialValues: Partial<
@@ -22,6 +25,7 @@ export default class FormRuleStore<T extends Record<string, FormValue>> {
     > = {},
   ) {
     makeAutoObservable(this)
+    this.initialRules = { ...initialValues }
     this.initialize(initialValues)
   }
 
@@ -167,4 +171,9 @@ export default class FormRuleStore<T extends Record<string, FormValue>> {
     )
     return errors
   }
+
+  reset = action(() => {
+    this.rules.clear()
+    this.initialize(this.initialRules)
+  })
 }

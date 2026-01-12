@@ -47,6 +47,7 @@ export type FormStoreHook<T extends Record<string, any>> = {
   getMinLength: (name: string) => number | undefined
   getMax: (name: string) => number | undefined
   getMaxLength: (name: string) => number | undefined
+  reset: () => void
 }
 
 export const useFormStore = <T extends Record<string, any>>(
@@ -182,6 +183,13 @@ export const useFormStore = <T extends Record<string, any>>(
     return getRuleValue(name, 'maxLength')
   }
 
+  const reset = useCallback(() => {
+    dataStore.reset()
+    errorStore.clearAll()
+    ruleStore.reset()
+    setVisited(false)
+  }, [dataStore, errorStore, ruleStore])
+
   return {
     ref: formRef,
     validate,
@@ -202,6 +210,7 @@ export const useFormStore = <T extends Record<string, any>>(
     getMinLength,
     getMax,
     getMaxLength,
+    reset,
     register,
     cancel,
   }

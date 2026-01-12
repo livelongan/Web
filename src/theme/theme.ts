@@ -431,7 +431,7 @@ export const getTheme = (mode: ThemeModeType) => {
       MuiStack: {
         defaultProps: {
           gap: '16px',
-          flexDirection: 'column',
+          direction: 'column',
         },
       },
       MuiTextField: {
